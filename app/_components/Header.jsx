@@ -11,7 +11,8 @@ import {
   DropdownMenuTrigger,
 } from "../../components/ui/dropdown-menu"
 
-import GlobalApi from "../_utils/GlobalApl";
+import GlobalApi from "../_utils/GlobalApi";
+import Link from "next/link";
 
 function Header() {
 
@@ -30,6 +31,8 @@ function Header() {
     })
   }
 
+
+
   return (
     <div className="p-5 shadow-md flex justify-between">
       <div className="flex items-center gap-8">
@@ -40,7 +43,7 @@ function Header() {
           <DropdownMenuTrigger>
           <h2
           className="hidden md:flex gap-2 items-center
-           border rounded-full bg-slate-200 p-2 px-10 cursor-pointer">
+           border rounded-full bg-slate-200 p-2 px-10 cursor-pointer ">
           <LayoutGrid className="h-5 w-5 " /> category
         </h2>
           </DropdownMenuTrigger>
@@ -48,17 +51,20 @@ function Header() {
             <DropdownMenuLabel>Browse category</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {categoryList.map((category,index)=>(
-            <DropdownMenuItem>
+              <Link href={'/products-category/'+category.attributes.name}>
+            <DropdownMenuItem className="flex gap-4 items-center cursor-pointer">
               <img src={
 
                 process.env.NEXT_PUBLIC_BACKEND_BASE_URL+
-                category?.attributes?.icon?.data?.attributes?.url}
-                unoptimized={true}
+                category?.attributes?.icon?.data[0]?.attributes?.url}
+              
               alt="icon"
-              width={23}
-              height={23}/>
-              <h2>{category?.attributes?.name}</h2>
+              width={30}
+              height={30}/>
+              <h2 className="text-lg">{category?.attributes?.name}</h2>
+              
             </DropdownMenuItem>
+            </Link>
           ))}
             
           </DropdownMenuContent>
