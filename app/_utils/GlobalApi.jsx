@@ -25,11 +25,24 @@ const getProductsByCategory=(category)=>axiosClient.get('/products?filters[categ
     return resp.data.data
 })
 
+const registeUser = (username, email, password) => axiosClient.post('/auth/local/register', {
+    username: username,
+    email: email,
+    password: password
+});
+
+const signIn = (email, password) => axiosClient.post('/auth/local', {
+    identifier: email,
+    password: password
+});
+
 
 export default{
     getCategory,
     getSliders,
     getCategoryList,
     getAllProducts,
-    getProductsByCategory
+    getProductsByCategory,
+    registeUser,
+    signIn
 }
