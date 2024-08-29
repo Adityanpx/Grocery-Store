@@ -1,7 +1,7 @@
 "use client"
 import { Button } from "../../components/ui/button";
-import { LayoutGrid, Search, ShoppingBag } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import { CircleUserRound, LayoutGrid, Search, ShoppingBag, ShoppingBasket } from "lucide-react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,17 +13,26 @@ import {
 
 import GlobalApi from "../_utils/GlobalApi";
 import Link from "next/link";
+import { UpdateCartContext } from "../_context/UpdateCartContext";
 
 function Header() {
 
-  const isLogin=sessionStorage.getItem('jwt')?true:false
-
+  const isLogin=sessionStorage.getItem('jwt')?true:false;
+  const [totalCartItem,setTotalCartItem]=useState(0);
+  const user=JSON.parse(sessionStorage.getItem('user'))
+  const jwt=sessionStorage.getItem('jwt');
   const [categoryList,setCategoryList]=useState([]);
+  const {updateCart,setUpdateCart}=useContext(UpdateCartContext);
+
 
   useEffect(()=>{
     getCategoryList();
 
   },[])
+  useEffect(()=>{
+    getCartItems();
+
+  },[updateCart])
 
   const getCategoryList=()=>{
     GlobalApi.getCategory().then(resp=>{
@@ -33,12 +42,20 @@ function Header() {
     })
   }
 
+  const getCartItems=async()=>{
+    const cartItemsList=await GlobalApi.getCartItems(user.id,jwt);
+    console.log(cartItemsList);
+    setTotalCartItem(cartItemsList?.length)
+    
+  }
+
 
 
   return (
     <div className="p-5 shadow-md flex justify-between">
       <div className="flex items-center gap-8">
-        <img src="/grocery_logo.png" width={150} height={100} />
+        <Link href={'/'}>
+        <img src="/grocery_logo.png" width={150} height={100} /></Link>
 
         
         <DropdownMenu>
@@ -82,12 +99,30 @@ function Header() {
         </div>
       </div>
       <div className="flex gap-5 items-center">
-        <h2 className="flex gap-2 items-center">
-          <ShoppingBag />0
+        <h2 className="flex gap-2 text-lg items-center">
+          <ShoppingBasket /> 
+          <span className="bg-green-600 text-white rounded-full px-2">{totalCartItem}</span>
         </h2>
-        {!isLogin&& 
-        <Link href={'/sign-in'}>  <Button>Login</Button></Link>
-        }
+        
+        <DropdownMenu>
+  <DropdownMenuTrigger>
+    <div className="mr-8">
+  <CircleUserRound className="h-14 text-green-600 "/></div>
+  </DropdownMenuTrigger>
+  <DropdownMenuContent>
+    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+    <DropdownMenuSeparator />
+    <Link href={'/create-account'}>
+    <DropdownMenuItem>Register</DropdownMenuItem> </Link>
+    <Link href={'sign-in'}>
+    <DropdownMenuItem>Sign In</DropdownMenuItem></Link>
+    <DropdownMenuItem> Contact Us</DropdownMenuItem>
+  </DropdownMenuContent>
+</DropdownMenu>
+        
+        
+        
+        
       </div>
     </div>
   );

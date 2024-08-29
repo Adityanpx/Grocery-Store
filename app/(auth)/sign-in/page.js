@@ -14,13 +14,7 @@ function SignIn() {
   const [password, setPassword] = useState('');
   const router=useRouter();
 
-  useEffect(()=>{
-    const jwt=sessionStorage.getItem('jwt');
-    if(jwt){
-      router.push('/')
-    }
-
-  },[])
+  
 
   const onSignIn=()=>{
     GlobalApi.signIn(email,password).then(resp=>{

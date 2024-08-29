@@ -1,7 +1,9 @@
+
 import { Outfit } from "next/font/google";
 import "./globals.css";
 import Header from "./_components/Header";
 import { Toaster } from "sonner";
+import { UpdateCartContext } from "./_context/UpdateCartContext";
 
 const outfit = Outfit({ subsets: ["latin"] });
 
@@ -14,9 +16,11 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={outfit.className}>
+        <UpdateCartContext.Provider>
         <Header/>
         {children}
         <Toaster />
+        </UpdateCartContext.Provider>
       </body>
     </html>
   );

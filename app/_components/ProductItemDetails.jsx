@@ -1,9 +1,55 @@
 "use client"
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Button } from "../../components/ui/button";
-import { ShoppingBasket } from "lucide-react";
+import { LoaderCircle, ShoppingBasket } from "lucide-react";
+import { useRouter } from "next/navigation";
+import GlobalApi from "../_utils/GlobalApi";
+import { toast } from "sonner";
+import {UpdateCartContext} from "../_context/UpdateCartContext"
 
 function ProductItemDetails({ product }) {
+
+  const jwt=sessionStorage.getItem('jwt');
+  const user=JSON.parse(sessionStorage.getItem('user'));
+  const router=useRouter();
+  const [quantity,setQuantity]=useState(1);
+  const [loading,setLoading]=useState();
+  const {updateCart,setUpdateCart}=useContext(UpdateCartContext);
+
+  
+
+
+  const addToCart=()=>{
+    setLoading(true)
+    if(!jwt){
+      router.push('/sign-in');
+      setLoading(false)
+      return;
+    }
+    const data={
+      data:{
+        quantity:quantity,
+      amount:(quantity*productTotalPrice).toFixed(2),
+      products:product.id,
+      users_permissions_users:user.id,
+      userId:user.id
+
+      }
+      
+    }
+    console.log(data);
+    
+    GlobalApi.addToCart(data,jwt).then(resp=>{
+      console.log(resp);
+      toast('Added to Cart')
+      setUpdateCart(!upadateCart);
+      setLoading(false)
+      
+    },(e)=>{
+      toast('Error while adding to Cart')
+    } )
+
+  }
 
     const [productTotalPrice,setProductTotalPrice]=useState(
         product.attributes.sellingPrice?
@@ -11,7 +57,7 @@ function ProductItemDetails({ product }) {
         product.attributes.mrp
     )
 
-    const [quantity,setQuantity]=useState(1);
+    
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 p-7 text-black bg-white">
       <img
@@ -46,9 +92,14 @@ function ProductItemDetails({ product }) {
             </div>
             <h2 className="text-3xl font-bold">= ${quantity*productTotalPrice}.00</h2>
             </div>
-            <Button variant="outline" className="flex gap-3 text-green-600 hover:text-white hover:bg-green-600">
+            <Button variant="outline" onClick={(addToCart)} 
+            className="flex gap-3 text-green-600 hover:text-white
+             hover:bg-green-600"
+             disabled={loading}>
+             
                 <ShoppingBasket/>
-                Add to Cart
+                {loading?<LoaderCircle className="animate-spin"/> :'Add to Cart'}
+                
             </Button>
         </div>
         <h2><span className="font-bold ">Category:</span> {product.attributes.

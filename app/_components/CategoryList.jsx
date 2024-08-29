@@ -4,8 +4,8 @@ import React from "react";
 
 function CategoryList({ categoryList }) {
   return (
-    <div className="mt-5 p-3">
-      <h2 className="text-green-600 text-2xl font-bold mt-6">
+    <div className=" p-3">
+      <h2 className="text-green-600 text-2xl font-bold ">
         Shop By Categories
       </h2>
       <div className="grid grid-cols-3 md:grid-cols-6 
