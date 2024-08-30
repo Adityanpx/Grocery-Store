@@ -42,7 +42,7 @@ function ProductItemDetails({ product }) {
     GlobalApi.addToCart(data,jwt).then(resp=>{
       console.log(resp);
       toast('Added to Cart')
-      setUpdateCart(!upadateCart);
+      setUpdateCart(!updateCart)
       setLoading(false)
       
     },(e)=>{
