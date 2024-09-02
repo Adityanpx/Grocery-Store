@@ -15,7 +15,18 @@ import {
 } from "../../components/ui/dropdown-menu";
 import GlobalApi from "../_utils/GlobalApi";
 import Link from "next/link";
+import CartItemsList from "../_components/CartItemsList";
 import { UpdateCartContext } from "../_context/UpdateCartContext";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "../../app/components/ui/sheet";
+import { toast } from "sonner";
 
 function Header() {
   const [isLogin, setIsLogin] = useState(false);
@@ -24,6 +35,7 @@ function Header() {
   const [jwt, setJwt] = useState(null);
   const [categoryList, setCategoryList] = useState([]);
   const { updateCart, setUpdateCart } = useContext(UpdateCartContext);
+  const [cartItemList, setCartItemList] = useState([]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -55,14 +67,43 @@ function Header() {
   };
 
   const getCartItems = async () => {
+    if (!user || !user.id || !jwt) {
+      console.warn("User or JWT is not set, skipping cart fetch.");
+      return;
+    }
+    
     try {
-      const cartItemsList = await GlobalApi.getCartItems(user.id, jwt);
-      console.log(cartItemsList);
-      setTotalCartItem(cartItemsList?.length || 0);
+      console.log("Fetching cart items for user:", user.id);
+      const cartItems = await GlobalApi.getCartItems(user.id, jwt);
+      console.log("Cart items fetched:", cartItems);
+
+      // Set the total number of items in the cart
+      setTotalCartItem(Array.isArray(cartItems) ? cartItems.length : 0);
+      
+      // Set the cart item list
+      setCartItemList(cartItems || []);
     } catch (error) {
       console.error("Failed to fetch cart items:", error);
     }
   };
+
+  const onDeleteItem=(id)=>{
+    GlobalApi.deleteCartItem(id,jwt).then(resp=>{
+      toast('Item removed !')
+      getCartItems();
+    })
+  }
+
+  const [subtotal,setSubTotal]=useState();
+
+  useEffect(() => {
+    let total = 0;
+    cartItemList.forEach(element => {
+        total = total + element.amount;
+    });
+    setSubTotal(total.toFixed(2));
+}, [cartItemList]); // Correct variable name
+
 
   return (
     <div className="p-5 shadow-md flex justify-between">
@@ -102,10 +143,29 @@ function Header() {
         </div>
       </div>
       <div className="flex gap-5 items-center">
-        <h2 className="flex gap-2 text-lg items-center">
-          <ShoppingBasket />
-          <span className="bg-green-600 text-white rounded-full px-2">{totalCartItem}</span>
-        </h2>
+        <Sheet>
+          <SheetTrigger>
+            <h2 className="flex gap-2 text-lg items-center">
+              <ShoppingBasket />
+              <span className="bg-green-600 text-white rounded-full px-2">{totalCartItem}</span>
+            </h2>
+          </SheetTrigger>
+          <SheetContent>
+            <SheetHeader>
+              <SheetTitle className="bg-green-600 mt-6 text-white font-bold p-2 text-lg">My Cart</SheetTitle>
+              <SheetDescription>
+                <CartItemsList cartItemsList={cartItemList} onDeleteItem={onDeleteItem} />
+              </SheetDescription>
+            </SheetHeader>
+            <SheetClose asChild>
+            <div className='absolute w-[90%] flex flex-col bottom-6'>
+        <h2 className='flex justify-between text-lg font-bold'>SubTotal
+          <span>$ {subtotal}</span></h2>
+        <Button className='bg-green-600 '>Checkout</Button>
+      </div>
+            </SheetClose>
+          </SheetContent>
+        </Sheet>
 
         <DropdownMenu>
           <DropdownMenuTrigger>
@@ -119,10 +179,10 @@ function Header() {
             <Link href={'/create-account'}>
               <DropdownMenuItem>Register</DropdownMenuItem>
             </Link>
-            <Link href={'sign-in'}>
+            <Link href={'/sign-in'}>
               <DropdownMenuItem>Sign In</DropdownMenuItem>
             </Link>
-            <DropdownMenuItem>Contact Us</DropdownMenuItem>
+            <DropdownMenuItem>Logout</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
