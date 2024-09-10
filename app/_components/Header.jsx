@@ -1,9 +1,7 @@
-// app/_components/Header.jsx
-
 "use client";
 
 import { Button } from "../../components/ui/button";
-import { CircleUserRound, LayoutGrid, Search, ShoppingBasket } from "lucide-react";
+import { CircleUserRound, LayoutGrid, Link2, Search, ShoppingBasket, ShoppingCart } from "lucide-react";
 import React, { useContext, useEffect, useState } from "react";
 import {
   DropdownMenu,
@@ -27,6 +25,7 @@ import {
   SheetTrigger,
 } from "../../app/components/ui/sheet";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation"; // Import useRouter for programmatic navigation
 
 function Header() {
   const [isLogin, setIsLogin] = useState(false);
@@ -36,6 +35,8 @@ function Header() {
   const [categoryList, setCategoryList] = useState([]);
   const { updateCart, setUpdateCart } = useContext(UpdateCartContext);
   const [cartItemList, setCartItemList] = useState([]);
+  const [subtotal, setSubTotal] = useState();
+  const router = useRouter(); // Initialize the router
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -87,35 +88,49 @@ function Header() {
     }
   };
 
-  const onDeleteItem=(id)=>{
-    GlobalApi.deleteCartItem(id,jwt).then(resp=>{
-      toast('Item removed !')
+  const onDeleteItem = (id) => {
+    GlobalApi.deleteCartItem(id, jwt).then(resp => {
+      toast('Item removed !');
       getCartItems();
-    })
-  }
-
-  const [subtotal,setSubTotal]=useState();
+    });
+  };
 
   useEffect(() => {
     let total = 0;
     cartItemList.forEach(element => {
-        total = total + element.amount;
+      total += element.amount;
     });
     setSubTotal(total.toFixed(2));
-}, [cartItemList]); // Correct variable name
+  }, [cartItemList]);
 
+  // Function to handle checkout button click
+  const handleCheckoutClick = () => {
+    router.push("/checkout");
+    // Optionally, you can also close the cart sheet if you want
+    // but it's already handled by the router push
+  };
 
   return (
     <div className="p-5 shadow-md flex justify-between">
       <div className="flex items-center gap-8">
         <Link href={'/'}>
-          <img src="/grocery_logo.png" width={150} height={100} alt="logo" />
+          <img src="/grocery_logo.png" width={200} height={100} alt="logo" />
         </Link>
 
-        <DropdownMenu>
+      
+        
+
+        
+      </div>
+      <div className="flex items-center">
+      <Link href="/#"><Button className=" hidden md:flex hover:text-green-600 " variant="link">Home</Button></Link>
+      <Link href="/aboutUs"><Button className="hidden md:flex hover:text-green-600 " variant="link">About</Button></Link>
+      <Button className="hidden md:flex hover:text-green-600 " variant="link">Shop</Button>
+      <Button className=" hidden md:flex hover:text-green-600 " variant="link">Contact</Button>
+      <DropdownMenu>
           <DropdownMenuTrigger>
-            <h2 className="hidden md:flex gap-2 items-center border rounded-full bg-slate-200 p-2 px-10 cursor-pointer">
-              <LayoutGrid className="h-5 w-5" /> category
+            <h2 className="hidden md:flex gap-2 items-center  hover:text-green-600   p-2 cursor-pointer">
+            category<LayoutGrid className="h-5 w-5" /> 
             </h2>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
@@ -137,18 +152,17 @@ function Header() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <div className="md:flex gap-3 items-center rounded-full border p-2 hidden">
-          <Search />
-          <input type="text" placeholder="Search" className="outline-none" />
-        </div>
       </div>
       <div className="flex gap-5 items-center">
         <Sheet>
           <SheetTrigger>
-            <h2 className="flex gap-2 text-lg items-center">
-              <ShoppingBasket />
-              <span className="bg-green-600 text-white rounded-full px-2">{totalCartItem}</span>
+            <h2 className="flex text-lg items-center">
+              <ShoppingCart className="" />
+              <div className="mb-8 mr">
+              <span className="   text-red-500 rounded-full text-xs">{totalCartItem}</span>
+              </div>
             </h2>
+
           </SheetTrigger>
           <SheetContent>
             <SheetHeader>
@@ -158,11 +172,11 @@ function Header() {
               </SheetDescription>
             </SheetHeader>
             <SheetClose asChild>
-            <div className='absolute w-[90%] flex flex-col bottom-6'>
-        <h2 className='flex justify-between text-lg font-bold'>SubTotal
-          <span>$ {subtotal}</span></h2>
-        <Button className='bg-green-600 '>Checkout</Button>
-      </div>
+              <div className='absolute w-[90%] flex flex-col bottom-6'>
+                <h2 className='flex justify-between text-lg font-bold'>SubTotal
+                  <span>$ {subtotal}</span></h2>
+                <Button className='bg-green-600' onClick={handleCheckoutClick}>Checkout</Button>
+              </div>
             </SheetClose>
           </SheetContent>
         </Sheet>
